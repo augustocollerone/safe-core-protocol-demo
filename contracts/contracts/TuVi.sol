@@ -19,7 +19,7 @@ interface OwnerManager {
  * @notice This plugin does not need Safe owner(s) confirmation(s) to execute Safe txs once enabled
  *         through a Safe{Core} Protocol Manager.
  */
-contract WhitelistPlugin is BasePluginWithEventMetadata {
+contract TuviPlugin is BasePluginWithEventMetadata {
     // safe account => account => whitelist status
     mapping(address => mapping(address => mapping(address => bool))) public whitelistedAddresses;
 
@@ -48,8 +48,8 @@ contract WhitelistPlugin is BasePluginWithEventMetadata {
     ) external returns (bytes[] memory data) {
         address safeAddress = address(safe);
 
-        // Only whitelisted API keys can execute transactions
-        if (!whitelistedAddresses[safeAddress][msg.sender]) revert ApiKeyIsNotRegistered(safeAddress, msg.sender);
+        // // Only whitelisted API keys can execute transactions
+        // if (!whitelistedAddresses[safeAddress][msg.sender]) revert ApiKeyIsNotRegistered(safeAddress, msg.sender);
 
         SafeProtocolAction[] memory actions = safetx.actions;
         uint256 length = actions.length;
