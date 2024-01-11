@@ -1,14 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import Home from './routes/home/Home';
-import reportWebVitals from './reportWebVitals';
-import {
-  createHashRouter,
-  RouterProvider,
-} from "react-router-dom";
-import PluginList from './routes/plugins/PluginList';
-import { RelayPlugin } from './routes/samples/relay/RelayPlugin';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import Home from "./routes/home/Home";
+import reportWebVitals from "./reportWebVitals";
+import { createHashRouter, RouterProvider } from "react-router-dom";
+import PluginList from "./routes/plugins/PluginList";
+import { RelayPlugin } from "./routes/samples/relay/RelayPlugin";
+import { TuViPlugin } from "./routes/samples/relay/TuViPlugin";
+import { WhitelistPlugin } from "./routes/samples/relay/WhitelistPlugin";
 
 const router = createHashRouter([
   {
@@ -23,12 +22,12 @@ const router = createHashRouter([
   },
   {
     path: "/relay/:pluginAddress",
-    element: <RelayPlugin />,
+    element: <WhitelistPlugin />,
   },
 ]);
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
