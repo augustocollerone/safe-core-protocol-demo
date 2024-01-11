@@ -1,7 +1,7 @@
 {
-  "short_name": "Safe{Core} Protocol Demo",
-  "name": "Safe{Core} Protocol Demo",
-  "description": "App to test the interaction with Plugins from the Safe{Core} Protocol. Manage and configure Plugins for your Account.",
+  "short_name": "TUVI Safe Plugin Interaction Demo",
+  "name": "TUVI Safe Plugin Interaction Demo",
+  "description": "tuvi tuvi tuvi",
   "iconPath": "logo192.png",
   "icons": [
     {
