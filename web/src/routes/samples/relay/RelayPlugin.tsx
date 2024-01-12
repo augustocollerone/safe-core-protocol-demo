@@ -116,8 +116,6 @@ export const RelayPlugin: FunctionComponent<{}> = () => {
     maxFee === undefined ||
     selectedFeeTokenInfo === undefined;
 
-  console.log("*AC state", { safeInfo, maxFee, selectedFeeTokenInfo });
-
   return (
     <div className="Sample">
       <Card className="Settings">

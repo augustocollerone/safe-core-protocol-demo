@@ -16,6 +16,8 @@ import {
 } from "../../../logic/sampleWhitelist";
 import { getSafeInfo, isConnectedToSafe } from "../../../logic/safeapp";
 import { SafeInfo } from "@safe-global/safe-apps-sdk";
+import { SafeMultisigTransaction } from "../../../logic/services";
+import { NextTxsList } from "./NextTxs";
 
 export const WhitelistPlugin: FunctionComponent<{}> = () => {
   const { pluginAddress } = useParams();
@@ -24,7 +26,9 @@ export const WhitelistPlugin: FunctionComponent<{}> = () => {
     undefined
   );
   const [safeInfo, setSafeInfo] = useState<SafeInfo | undefined>(undefined);
-  console.log({ pluginAddress });
+  const [txToRelay, setTxToRelay] = useState<
+    SafeMultisigTransaction | undefined
+  >(undefined);
 
   // MARK: Fetch SAFE Info
   useEffect(() => {
@@ -165,6 +169,13 @@ export const WhitelistPlugin: FunctionComponent<{}> = () => {
           </>
         )}
       </Card>
+
+      {safeInfo && (
+        <NextTxsList
+          safeInfo={safeInfo}
+          handleRelay={(tx) => setTxToRelay(tx)}
+        />
+      )}
     </div>
   );
 };

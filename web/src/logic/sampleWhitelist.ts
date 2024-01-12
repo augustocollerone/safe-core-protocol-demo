@@ -11,7 +11,6 @@ const SAMPLE_PLUGIN_ABI = [
     "function whitelistedAddresses(address, address) view returns (bool)"
 ]
 
-
 export const isKnownSamplePlugin = (chainId: number, address: string): boolean => 
     ethers.toBigInt(chainId) == ethers.toBigInt(SAMPLE_PLUGIN_CHAIN_ID) &&
     getAddress(address) === SAMPLE_PLUGIN_ADDRESS  
