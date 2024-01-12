@@ -13,11 +13,13 @@ import {
   checkWhitelist,
   addToWhitelist,
   removeFromWhitelist,
+  whitelistTx,
 } from "../../../logic/sampleWhitelist";
 import { getSafeInfo, isConnectedToSafe } from "../../../logic/safeapp";
 import { SafeInfo } from "@safe-global/safe-apps-sdk";
 import { SafeMultisigTransaction } from "../../../logic/services";
 import { NextTxsList } from "./NextTxs";
+import { buildExecuteTx } from "../../../logic/safe";
 
 export const WhitelistPlugin: FunctionComponent<{}> = () => {
   const { pluginAddress } = useParams();
@@ -26,9 +28,6 @@ export const WhitelistPlugin: FunctionComponent<{}> = () => {
     undefined
   );
   const [safeInfo, setSafeInfo] = useState<SafeInfo | undefined>(undefined);
-  const [txToRelay, setTxToRelay] = useState<
-    SafeMultisigTransaction | undefined
-  >(undefined);
 
   // MARK: Fetch SAFE Info
   useEffect(() => {
@@ -83,6 +82,22 @@ export const WhitelistPlugin: FunctionComponent<{}> = () => {
     console.log("*AC handleRemoveFromWhitelist: ", account);
     await removeFromWhitelist(account);
   }, []);
+
+  const handleRelay = useCallback(
+    async (txToRelay: SafeMultisigTransaction) => {
+      if (txToRelay === undefined || !safeInfo) return;
+
+      try {
+        const { to: account, data } = await buildExecuteTx(txToRelay);
+        // TODO: remove fallback to native fee token and enforce that token is selected
+        const txId = await whitelistTx(safeInfo.safeAddress, account, data);
+        console.log({ txId });
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    [safeInfo]
+  );
 
   const isLoading = safeInfo === undefined;
 
@@ -171,10 +186,7 @@ export const WhitelistPlugin: FunctionComponent<{}> = () => {
       </Card>
 
       {safeInfo && (
-        <NextTxsList
-          safeInfo={safeInfo}
-          handleRelay={(tx) => setTxToRelay(tx)}
-        />
+        <NextTxsList safeInfo={safeInfo} handleRelay={handleRelay} />
       )}
     </div>
   );

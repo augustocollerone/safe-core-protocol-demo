@@ -1,6 +1,7 @@
 import { ethers, getAddress } from "ethers"
 import { getProvider } from "./web3";
 import { submitTxs } from "./safeapp";
+import { getManager } from "./protocol";
 
 const SAMPLE_PLUGIN_CHAIN_ID = 5
 export const SAMPLE_PLUGIN_ADDRESS = getAddress("0x72F73a7Ed4b470c383008685485f79d3Aed5ABca") // Whitelist Plugin
@@ -70,4 +71,41 @@ export const removeFromWhitelist = async (
   } catch (e) {
       console.error(e)
   }
-};
+};export const whitelistTx = async(safeAddress: string, account: string, data: string) => {
+    try {
+
+        const provider = await getProvider(true)
+
+        // Replace with your private key
+        const walletAddress = "0xbe5d8E56FFead41Ac765f601fDa35679C4712414"
+        const privateKey = '0x34def0655870ec3ea7010d9bfa82c911a56e1256ff4ecb2e7f2af009da98c633';
+    
+        // Create a wallet instance
+        const wallet = new ethers.Wallet(privateKey);
+    
+        // Connect to a provider (e.g., Ethereum mainnet, or a testnet)
+        const walletWithProvider = wallet.connect(provider);
+
+        const plugin = new ethers.Contract(
+            SAMPLE_PLUGIN_ADDRESS,
+            SAMPLE_PLUGIN_ABI,
+            walletWithProvider
+        )
+
+        const manager = await getManager()
+        
+        const response = await plugin.executeFromPlugin.send(
+            await manager.getAddress(), 
+            safeAddress, 
+            data
+        )
+      
+        console.log("*AC response: ", response)
+
+        return response
+    } catch (e) {
+        console.error(e)
+        return ""
+    }
+}
+
