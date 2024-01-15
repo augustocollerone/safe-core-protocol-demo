@@ -32,7 +32,7 @@ contract WhitelistPlugin is BasePluginWithEventMetadata {
 
     constructor()
         BasePluginWithEventMetadata(
-            PluginMetadata({name: "Whitelist Plugin", version: "1.0.0", requiresRootAccess: false, iconUrl: "", appUrl: ""})
+            PluginMetadata({name: "Whitelist Plugin", version: "4.2.0", requiresRootAccess: false, iconUrl: "", appUrl: ""})
         )
     {}
 
@@ -47,38 +47,7 @@ contract WhitelistPlugin is BasePluginWithEventMetadata {
         ISafe safe,
         SafeTransaction calldata safetx
     ) external returns (bytes[] memory data) {
-        address safeAddress = address(safe);
-        // Only Safe owners are allowed to execute transactions to whitelisted accounts.
-        if (!(OwnerManager(safeAddress).isOwner(msg.sender))) {
-            revert CallerIsNotOwner(safeAddress, msg.sender);
-        }
-
-        SafeProtocolAction[] memory actions = safetx.actions;
-        uint256 length = actions.length;
-        for (uint256 i = 0; i < length; i++) {
-            if (!whitelistedAddresses[safeAddress][actions[i].to]) revert AddressNotWhiteListed(actions[i].to);
-        }
         // Test: Any tx that updates whitelist of this contract should be blocked
         (data) = manager.executeTransaction(safe, safetx);
-    }
-
-    /**
-     * @notice Adds an account to whitelist mapping.
-     *         The caller should be a Safe account.
-     * @param account address of the account to be whitelisted
-     */
-    function addToWhitelist(address account) external {
-        whitelistedAddresses[msg.sender][account] = true;
-        emit AddressWhitelisted(account);
-    }
-
-    /**
-     * @notice Removes an account from whitelist mapping.
-     *         The caller should be a Safe account.
-     * @param account address of the account to be removed from the whitelist
-     */
-    function removeFromWhitelist(address account) external {
-        whitelistedAddresses[msg.sender][account] = false;
-        emit AddressRemovedFromWhitelist(account);
     }
 }
