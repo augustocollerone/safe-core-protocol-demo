@@ -10,6 +10,11 @@ export interface PluginMetadata {
     appUrl: string;
 }
 
+export interface PluginMetadataDetails {
+    metadata: PluginMetadata;
+    metadataHash: string;
+}
+
 // const ProviderType_IPFS = BigInt(0);
 // const ProviderType_URL = BigInt(1);
 const ProviderType_Contract = BigInt(2);
@@ -77,10 +82,15 @@ export const decodePluginMetadata = (data: string, pluginAddress?: string): Plug
     };
 };
 
-export const loadPluginMetadata = async (plugin: Contract): Promise<PluginMetadata> => {
+
+
+export const loadPluginMetadata = async (plugin: Contract): Promise<PluginMetadataDetails> => {
     console.log({plugin})
     const metadataHash = await plugin.metadataHash();
     const metadata = await loadRawMetadata(plugin, metadataHash);
     if (metadataHash !== keccak256(metadata)) throw Error("Invalid metadata retrieved!");
-    return decodePluginMetadata(metadata, await plugin.getAddress());
+    return {
+        metadata: decodePluginMetadata(metadata, await plugin.getAddress()),
+        metadataHash,
+    }
 };

@@ -10,16 +10,17 @@ const SENTINEL_MODULES = "0x0000000000000000000000000000000000000001";
 export interface PluginDetails {
   metadata: PluginMetadata;
   enabled?: boolean;
+  metadataHash: string;
 }
 
 export const loadPluginDetails = async (
   pluginAddress: string
 ): Promise<PluginDetails> => {
   const plugin = await getPlugin(pluginAddress);
-  const metadata = await loadPluginMetadata(plugin);
-  if (!(await isConnectedToSafe())) return { metadata };
+  const {metadata, metadataHash} = await loadPluginMetadata(plugin);
+  if (!(await isConnectedToSafe())) return { metadata, metadataHash };
   const enabled = await isPluginEnabled(pluginAddress);
-  return { metadata, enabled };
+  return { metadata , enabled, metadataHash };
 };
 
 export const loadPlugins = async (

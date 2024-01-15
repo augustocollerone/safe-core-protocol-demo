@@ -24,6 +24,7 @@ contract WhitelistPlugin is BasePluginWithEventMetadata {
     // safe account => account => whitelist status
     mapping(address => mapping(address => bool)) public whitelistedAddresses;
 
+    event TuVieja(address indexed account);
     event AddressWhitelisted(address indexed account);
     event AddressRemovedFromWhitelist(address indexed account);
 
@@ -32,7 +33,7 @@ contract WhitelistPlugin is BasePluginWithEventMetadata {
 
     constructor()
         BasePluginWithEventMetadata(
-            PluginMetadata({name: "Whitelist Plugin", version: "4.2.0", requiresRootAccess: false, iconUrl: "", appUrl: ""})
+            PluginMetadata({name: "Whitelist Plugin", version: "4.2.1", requiresRootAccess: false, iconUrl: "", appUrl: ""})
         )
     {}
 
@@ -47,6 +48,7 @@ contract WhitelistPlugin is BasePluginWithEventMetadata {
         ISafe safe,
         SafeTransaction calldata safetx
     ) external returns (bytes[] memory data) {
+        emit TuVieja(msg.sender);
         // Test: Any tx that updates whitelist of this contract should be blocked
         (data) = manager.executeTransaction(safe, safetx);
     }

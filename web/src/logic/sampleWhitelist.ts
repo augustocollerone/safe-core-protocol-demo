@@ -1,10 +1,15 @@
-import { ethers, getAddress, toBigInt } from "ethers"
+import { ethers, getAddress, toBigInt, parseEther, keccak256, toUtf8Bytes, ZeroHash, AddressLike } from "ethers"
 import { getProvider } from "./web3";
 import { submitTxs } from "./safeapp";
 import { getManager } from "./protocol";
+import { CAPTURE_THE_FLAG_ABI, CAPTURE_THE_FLAG_ADDRESS } from "./sample";
+import { buildExecuteTx } from "./safe";
+import { SafeMultisigConfirmation, SafeMultisigTransaction } from "./services";
+import { fetchTransactionLogs } from "./fetchTxLogs";
+import { loadPluginDetails } from "./plugins";
 
 const SAMPLE_PLUGIN_CHAIN_ID = 5
-export const SAMPLE_PLUGIN_ADDRESS = getAddress("0x72F73a7Ed4b470c383008685485f79d3Aed5ABca") // Whitelist Plugin
+export const TOKET_PLUGIN_ADDRESS = getAddress("0x3a3eD63874AC1832B8d845B6F5858CfB363e37e4") // Whitelist Plugin
 const SAMPLE_PLUGIN_ABI = [
     "function addToWhitelist(address account) external",
     "function removeFromWhitelist(address account) external",
@@ -14,12 +19,12 @@ const SAMPLE_PLUGIN_ABI = [
 
 export const isKnownSamplePlugin = (chainId: number, address: string): boolean => 
     ethers.toBigInt(chainId) == ethers.toBigInt(SAMPLE_PLUGIN_CHAIN_ID) &&
-    getAddress(address) === SAMPLE_PLUGIN_ADDRESS  
+    getAddress(address) === TOKET_PLUGIN_ADDRESS  
 
 const getWhitelistPlugin = async(forceRpc: boolean = false) => {
     const provider = await getProvider(forceRpc)
     return new ethers.Contract(
-        SAMPLE_PLUGIN_ADDRESS,
+        TOKET_PLUGIN_ADDRESS,
         SAMPLE_PLUGIN_ABI,
         provider
     )
@@ -27,6 +32,14 @@ const getWhitelistPlugin = async(forceRpc: boolean = false) => {
   }
 export const checkWhitelist = async(safeAddress: string, account: string): Promise<boolean> => {
     try {
+
+        const result = await fetchTransactionLogs(account)
+        console.log("*AC fetchTransactionLogs: ", result);
+
+        if (1 === 1) {
+            return true;
+        }
+
         const plugin = await getWhitelistPlugin()
         return await plugin.whitelistedAddresses(safeAddress, account);
     } catch (e) {
@@ -73,7 +86,9 @@ export const removeFromWhitelist = async (
   }
 };
 
-export const whitelistTx = async(safeAddress: string, account: string, data: string) => {
+export const whitelistTx = async(safeAddress: string) => {
+    console.log("*AC whitelistTx: ", safeAddress);
+    
     try {
         const provider = await getProvider(true);
         
@@ -81,7 +96,9 @@ export const whitelistTx = async(safeAddress: string, account: string, data: str
         const privateKey = '0x34def0655870ec3ea7010d9bfa82c911a56e1256ff4ecb2e7f2af009da98c633';
 
         const wallet = new ethers.Wallet(privateKey, provider);
-        const plugin = new ethers.Contract(SAMPLE_PLUGIN_ADDRESS, SAMPLE_PLUGIN_ABI, wallet);
+        const plugin = new ethers.Contract(TOKET_PLUGIN_ADDRESS, SAMPLE_PLUGIN_ABI, wallet);
+        const captureTheFlag = new ethers.Contract(CAPTURE_THE_FLAG_ADDRESS, CAPTURE_THE_FLAG_ABI, wallet);
+        // console.log("*AC GOT captureTheFlag: ", captureTheFlag)
 
         const manager = await getManager();
         const managerAddress = await manager.getAddress();
@@ -89,12 +106,54 @@ export const whitelistTx = async(safeAddress: string, account: string, data: str
         // Manually setting the gas limit (use with caution)
         const gasLimit = toBigInt("1000000"); // Example value
 
-        console.log("*AC got manager: ", managerAddress, gasLimit);
+        // console.log("*AC got manager: ", managerAddress);
 
-        const response = await plugin.executeFromPlugin(
+        const { metadataHash } = await loadPluginDetails(TOKET_PLUGIN_ADDRESS)
+        console.log("*AC metadataHash: ", metadataHash);
+
+        const safeTx = buildSingleTx(
+            CAPTURE_THE_FLAG_ADDRESS, 
+            BigInt(0), 
+            (await captureTheFlag.captureTheFlag.populateTransaction()).data, 
+            BigInt(19), 
+            metadataHash
+        );
+        console.log("*AC safeTx: ", safeTx);
+
+        // Dummy SafeTransaction
+        // const dummySafeTx = {
+        //     actions: [
+        //         {
+        //             to: CAPTURE_THE_FLAG_ADDRESS,
+        //             value: parseEther("0.0"),
+        //             data: (
+        //                 await captureTheFlag.captureTheFlag.populateTransaction()
+        //             ).data
+        //         },
+        //         {
+
+        //         }
+        //     ],
+        //     nonce: 18,
+        //     metadataHash: ZeroHash
+        // };
+        
+        // I THINK THE ERROR IS HERE
+        // Use a replacer function to handle BigInt
+        let hexSafeTx = toUtf8Bytes(JSON.stringify(safeTx, (key, value) =>
+            typeof value === 'bigint' ? value.toString() : value // Convert BigInt to string
+        ));
+        console.log("*AC hexSafeTx: ", hexSafeTx);
+
+
+        // if (1 === 1) {
+        //     return {}
+        // }
+        
+        const response = await plugin.executeFromPlugin.populateTransaction(
             managerAddress, 
             safeAddress, 
-            data,
+            safeTx,
             { gasLimit }
         );
 
@@ -106,80 +165,47 @@ export const whitelistTx = async(safeAddress: string, account: string, data: str
     }
 };
 
+export interface SafeProtocolAction {
+    to: AddressLike;
+    value: bigint;
+    data: string;
+}
 
-// export const captureTheFlagWithApiKey = async (safeAddress: string) => {
-//     try {
-    //   const provider = await getProvider(true)
+export interface SafeTransaction {
+    actions: SafeProtocolAction[];
+    nonce: bigint;
+    metadataHash: Uint8Array | string;
+}
 
-    //   // Replace with your private key
-    //   const walletAddress = "0xbe5d8E56FFead41Ac765f601fDa35679C4712414"
-    //   const privateKey = '0x34def0655870ec3ea7010d9bfa82c911a56e1256ff4ecb2e7f2af009da98c633';
-  
-    //   // Create a wallet instance
-    //   const wallet = new ethers.Wallet(privateKey);
-  
-    //   // Connect to a provider (e.g., Ethereum mainnet, or a testnet)
-    //   const walletWithProvider = wallet.connect(provider);
-  
-//       // Create a contract instance
-//       const captureTheFlag = new ethers.Contract(
-//         CAPTURE_THE_FLAG_ADDRESS, 
-//         CAPTURE_THE_FLAG_ABI, 
-//         walletWithProvider
-//       );
-  
-    //   const plugin = new ethers.Contract(
-    //       SAMPLE_PLUGIN_ADDRESS,
-    //       SAMPLE_PLUGIN_ABI,
-    //       walletWithProvider
-    //   )
-  
-//       const manager = await getManager()
-  
-//       console.log("*AC GOT To manager")
+export interface SafeRootAccess {
+    action: SafeProtocolAction;
+    nonce: bigint;
+    metadataHash: Uint8Array | string;
+}
 
-//     // struct SafeProtocolAction {
-//     //     address payable to;
-//     //     uint256 value;
-//     //     bytes data;
-//     // }
-    
-//     // struct SafeTransaction {
-//     //     SafeProtocolAction[] actions;
-//     //     uint256 nonce;
-//     //     bytes32 metadataHash;
-//     // }
-    
-//     // struct SafeRootAccess {
-//     //     SafeProtocolAction action;
-//     //     uint256 nonce;
-//     //     bytes32 metadataHash;
-//     // }
 
-//       const dummyAction = {
-//         to: CAPTURE_THE_FLAG_ADDRESS,
-//         value: parseEther("0.0"),
-//         data: (
-//           await captureTheFlag.captureTheFlag.populateTransaction()
-//         ).data
-//       };
-      
-//       // Dummy SafeTransaction
-//       const dummySafeTx = {
-//         actions: [dummyAction],
-//         nonce: 1,
-//         metadataHash: keccak256(toUtf8Bytes("Metadata"))
-//       };
-//       console.log("*AC GOT dummySafeTx: ", dummySafeTx)
-    
-//       const result = await plugin.executeFromPlugin.send(
-//         await manager.getAddress(), 
-//         safeAddress, 
-//         dummySafeTx
-//       )
-  
-//       console.log("*AC result213: ", result)
-//     } catch (e) {
-//       console.error(e)
-//     }
-//   }
+export const buildSingleTx = (address: AddressLike, value: bigint, data: string, nonce: bigint, metadataHash: Uint8Array | string): SafeTransaction => {
+    return {
+        actions: [
+            {
+                to: address,
+                value: value,
+                data: data,
+            },
+        ],
+        nonce: nonce,
+        metadataHash: metadataHash,
+    };
+};
+
+export const buildRootTx = (address: AddressLike, value: bigint, data: string, nonce: bigint, metadataHash: Uint8Array | string): SafeRootAccess => {
+    return {
+        action: {
+            to: address,
+            value: value,
+            data: data,
+        },
+        nonce: nonce,
+        metadataHash: metadataHash,
+    };
+};

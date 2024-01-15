@@ -8,7 +8,7 @@ import {
   Typography,
   Card,
 } from "@mui/material";
-import { isKnownSamplePlugin } from "../../../logic/sample";
+import { isKnownSamplePlugin } from "../../../logic/sampleWhitelist";
 import {
   checkWhitelist,
   addToWhitelist,
@@ -90,8 +90,8 @@ export const WhitelistPlugin: FunctionComponent<{}> = () => {
       try {
         const { to: account, data } = await buildExecuteTx(txToRelay);
         // TODO: remove fallback to native fee token and enforce that token is selected
-        const txId = await whitelistTx(safeInfo.safeAddress, account, data);
-        console.log({ txId });
+        // const txId = await whitelistTx(safeInfo.safeAddress, account, data);
+        // console.log({ txId });
       } catch (e) {
         console.error(e);
       }
@@ -105,6 +105,8 @@ export const WhitelistPlugin: FunctionComponent<{}> = () => {
     <div className="Sample">
       <Card className="Settings">
         {isLoading && <CircularProgress />}
+
+        <p>{pluginAddress}</p>
 
         {safeInfo !== undefined && (
           <>
@@ -181,6 +183,19 @@ export const WhitelistPlugin: FunctionComponent<{}> = () => {
               Whitelisted:{" "}
               {checkStatus !== undefined ? checkStatus.toString() : "-"}
             </p>
+          </>
+        )}
+      </Card>
+
+      <Card className="Settings">
+        {isLoading && <CircularProgress />}
+
+        {safeInfo !== undefined && (
+          <>
+            <Typography variant="body1">Execute DEMO</Typography>
+            <Button onClick={() => whitelistTx(safeInfo.safeAddress)}>
+              EXECUTE
+            </Button>
           </>
         )}
       </Card>
