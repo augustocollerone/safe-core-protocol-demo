@@ -8,18 +8,18 @@ import { fetchTransactionLogs } from "./fetchTxLogs";
 import { loadPluginDetails } from "./plugins";
 
 const SAMPLE_PLUGIN_CHAIN_ID = 5
-export const TOKET_PLUGIN_ADDRESS = getAddress("0x3a3eD63874AC1832B8d845B6F5858CfB363e37e4") // Whitelist Plugin
+export const API_KEY_ACCOUNT_PLUGIN_ADDRESS = getAddress("0x3a3eD63874AC1832B8d845B6F5858CfB363e37e4") // Whitelist Plugin
 
 const CAPTURE_THE_FLAG_ADDRESS = getAddress("0x0ccabdf5C726235a74484ec018cFc90a70886f22")
 
 export const isKnownSamplePlugin = (chainId: number, address: string): boolean => 
     ethers.toBigInt(chainId) == ethers.toBigInt(SAMPLE_PLUGIN_CHAIN_ID) &&
-    getAddress(address) === TOKET_PLUGIN_ADDRESS  
+    getAddress(address) === API_KEY_ACCOUNT_PLUGIN_ADDRESS  
 
 const getWhitelistPlugin = async(forceRpc: boolean = false) => {
     const provider = await getProvider(forceRpc)
     return new ethers.Contract(
-        TOKET_PLUGIN_ADDRESS,
+        API_KEY_ACCOUNT_PLUGIN_ADDRESS,
         WHITELIST_PLUGIN.abi,
         provider
     )
@@ -86,7 +86,7 @@ export const whitelistTx = async(safeAddress: string) => {
         const privateKey = '0x34def0655870ec3ea7010d9bfa82c911a56e1256ff4ecb2e7f2af009da98c633';
 
         const wallet = new ethers.Wallet(privateKey, provider);
-        const plugin = new ethers.Contract(TOKET_PLUGIN_ADDRESS, WHITELIST_PLUGIN.abi, wallet);
+        const plugin = new ethers.Contract(API_KEY_ACCOUNT_PLUGIN_ADDRESS, WHITELIST_PLUGIN.abi, wallet);
         const captureTheFlag = new ethers.Contract(CAPTURE_THE_FLAG_ADDRESS, CAPTURE_THE_FLAG.abi, wallet);
 
         const ultraDebug = false
@@ -109,7 +109,7 @@ export const whitelistTx = async(safeAddress: string) => {
         // Manually setting the gas limit (use with caution)
         const gasLimit = toBigInt("1000000"); // Example value
 
-        const { metadataHash } = await loadPluginDetails(TOKET_PLUGIN_ADDRESS)
+        const { metadataHash } = await loadPluginDetails(API_KEY_ACCOUNT_PLUGIN_ADDRESS)
 
         // Dummy SafeTransaction
         const safeTx = buildSingleTx(
