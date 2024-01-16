@@ -6,6 +6,7 @@ import reportWebVitals from "./reportWebVitals";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import PluginList from "./routes/plugins/PluginList";
 import { WhitelistPlugin } from "./routes/samples/relay/WhitelistPlugin";
+import { ApiKeyAccountPluggin } from "./routes/samples/relay/ApiKeyAccountPluggin";
 
 const router = createHashRouter([
   {
@@ -21,6 +22,10 @@ const router = createHashRouter([
   {
     path: "/relay/:pluginAddress",
     element: <WhitelistPlugin />,
+  },
+  {
+    path: "/apiKeyAccounts/:pluginAddress",
+    element: <ApiKeyAccountPluggin />,
   },
 ]);
 

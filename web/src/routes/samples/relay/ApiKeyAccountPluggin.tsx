@@ -8,7 +8,7 @@ import {
   Typography,
   Card,
 } from "@mui/material";
-import { isKnownSamplePlugin } from "../../../logic/sampleWhitelist";
+import { isKnownSamplePlugin } from "../../../logic/sampleApiKeyAccounts";
 import {
   checkWhitelist,
   addToWhitelist,
@@ -22,7 +22,7 @@ import { NextTxsList } from "./NextTxs";
 import { buildExecuteTx } from "../../../logic/safe";
 import { PluginDetails, loadPluginDetails } from "../../../logic/plugins";
 
-export const WhitelistPlugin: FunctionComponent<{}> = () => {
+export const ApiKeyAccountPluggin: FunctionComponent<{}> = () => {
   const { pluginAddress } = useParams();
   const [newApiKeyAddress, setNewApiKeyAddress] = useState<string>("");
   const [checkStatus, setCheckStatus] = useState<boolean | undefined>(

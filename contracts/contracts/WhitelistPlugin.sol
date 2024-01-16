@@ -27,17 +27,19 @@ contract WhitelistPlugin is BasePluginWithEventMetadata {
     event ApiKeyAccountAdded(address indexed safe, address indexed apiKeyAccount, address destination);
     event ApiKeyAccountRemoved(address indexed safe, address indexed apiKeyAccount);
 
+    error ApiKeyAlreadyUsed(address apiKeyAccount, address existingDestination);
     error UnauthorizedApiKeyAccount(address apiKeyAccount, address destination);
     error CallerIsNotOwner(address safe, address caller);
 
     constructor()
         BasePluginWithEventMetadata(
-            PluginMetadata({name: "Api Key Accounts Plugin", version: "1.0.0", requiresRootAccess: false, iconUrl: "", appUrl: ""})
+            PluginMetadata({name: "Api Key Accounts Plugin", version: "1.0.1", requiresRootAccess: false, iconUrl: "", appUrl: ""})
         )
     {}
 
     /**
      * @notice Sets the permitted destination for a specific API key account.
+     *         Requires that any existing destination is first removed.
      * @param safe Safe account
      * @param apiKeyAccount The API key account
      * @param destination The address that the API key account is permitted to execute transactions to
@@ -46,6 +48,12 @@ contract WhitelistPlugin is BasePluginWithEventMetadata {
         if (!(OwnerManager(safe).isOwner(msg.sender))) {
             revert CallerIsNotOwner(safe, msg.sender);
         }
+
+        address existingDestination = permittedDestinations[safe][apiKeyAccount];
+        if (existingDestination != address(0)) {
+            revert ApiKeyAlreadyUsed(apiKeyAccount, existingDestination);
+        }
+
         permittedDestinations[safe][apiKeyAccount] = destination;
         emit ApiKeyAccountAdded(safe, apiKeyAccount, destination);
     }

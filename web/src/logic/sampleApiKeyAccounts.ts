@@ -8,7 +8,7 @@ import { fetchTransactionLogs } from "./fetchTxLogs";
 import { loadPluginDetails } from "./plugins";
 
 const SAMPLE_PLUGIN_CHAIN_ID = 5
-export const API_KEY_ACCOUNT_PLUGIN_ADDRESS = getAddress("0x3a3eD63874AC1832B8d845B6F5858CfB363e37e4") // Whitelist Plugin
+export const API_KEY_ACCOUNT_PLUGIN_ADDRESS = getAddress("0x680c2DFa19eeA179269146f68f416310A52627A0") // Whitelist Plugin
 
 const CAPTURE_THE_FLAG_ADDRESS = getAddress("0x0ccabdf5C726235a74484ec018cFc90a70886f22")
 
