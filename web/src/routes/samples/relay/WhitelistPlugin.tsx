@@ -20,6 +20,7 @@ import { SafeInfo } from "@safe-global/safe-apps-sdk";
 import { SafeMultisigTransaction } from "../../../logic/services";
 import { NextTxsList } from "./NextTxs";
 import { buildExecuteTx } from "../../../logic/safe";
+import { PluginDetails, loadPluginDetails } from "../../../logic/plugins";
 
 export const WhitelistPlugin: FunctionComponent<{}> = () => {
   const { pluginAddress } = useParams();
@@ -28,6 +29,9 @@ export const WhitelistPlugin: FunctionComponent<{}> = () => {
     undefined
   );
   const [safeInfo, setSafeInfo] = useState<SafeInfo | undefined>(undefined);
+  const [pluginDetails, setPluginDetails] = useState<PluginDetails | undefined>(
+    undefined
+  );
 
   // MARK: Fetch SAFE Info
   useEffect(() => {
@@ -39,6 +43,19 @@ export const WhitelistPlugin: FunctionComponent<{}> = () => {
         if (!isKnownSamplePlugin(info.chainId, pluginAddress!!))
           throw Error("Unknown Plugin");
         setSafeInfo(info);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchData();
+  }, [pluginAddress]);
+  // MARK: Fetch Plugin Details
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (!pluginAddress) throw Error("No plugin address");
+        const details = await loadPluginDetails(pluginAddress);
+        setPluginDetails(details);
       } catch (e) {
         console.error(e);
       }
@@ -91,6 +108,30 @@ export const WhitelistPlugin: FunctionComponent<{}> = () => {
 
         <p>{pluginAddress}</p>
 
+        {pluginDetails && (
+          <>
+            <Typography variant="body1">
+              Name: {pluginDetails.metadata.name}
+            </Typography>
+            <Typography variant="body1">
+              Version: {pluginDetails.metadata.version}
+            </Typography>
+          </>
+        )}
+
+        <Button
+          onClick={() =>
+            window.open(
+              `https://goerli.etherscan.io/address/${pluginAddress}`,
+              "_blank"
+            )
+          }
+        >
+          See in Etherscan
+        </Button>
+      </Card>
+
+      <Card className="Settings">
         {safeInfo !== undefined && (
           <>
             <Typography variant="body1">

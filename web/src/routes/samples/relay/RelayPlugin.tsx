@@ -20,8 +20,6 @@ import {
   getTokenInfo,
   isKnownSamplePlugin,
   updateMaxFeePerToken,
-  getWhitelistedAddresses,
-  createApiKey,
 } from "../../../logic/sample";
 import { getSafeInfo, isConnectedToSafe } from "../../../logic/safeapp";
 import { SafeInfo } from "@safe-global/safe-apps-sdk";
@@ -94,8 +92,6 @@ export const RelayPlugin: FunctionComponent<{}> = () => {
     const fetchData = async () => {
       try {
         setMaxFee(BigInt("9007199254740991"));
-        const whitelistedAddress = await getWhitelistedAddresses();
-        console.log("*AC WHITELISTED", whitelistedAddress);
       } catch (e) {
         console.error("*AC WHITELISTED", e);
       }
