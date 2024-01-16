@@ -21,24 +21,50 @@ interface OwnerManager {
  *         through a Safe{Core} Protocol Manager.
  */
 contract WhitelistPlugin is BasePluginWithEventMetadata {
-    // safe account => account => whitelist status
-    mapping(address => mapping(address => bool)) public whitelistedAddresses;
+    // Mapping of safe account => (API key account => permitted destination address)
+    mapping(address => mapping(address => address)) public permittedDestinations;
 
-    event TuVieja(address indexed account);
-    event AddressWhitelisted(address indexed account);
-    event AddressRemovedFromWhitelist(address indexed account);
+    event ApiKeyAccountAdded(address indexed safe, address indexed apiKeyAccount, address destination);
+    event ApiKeyAccountRemoved(address indexed safe, address indexed apiKeyAccount);
 
-    error AddressNotWhiteListed(address account);
+    error UnauthorizedApiKeyAccount(address apiKeyAccount, address destination);
     error CallerIsNotOwner(address safe, address caller);
 
     constructor()
         BasePluginWithEventMetadata(
-            PluginMetadata({name: "Whitelist Plugin", version: "4.2.1", requiresRootAccess: false, iconUrl: "", appUrl: ""})
+            PluginMetadata({name: "Api Key Accounts Plugin", version: "1.0.0", requiresRootAccess: false, iconUrl: "", appUrl: ""})
         )
     {}
 
     /**
-     * @notice Executes a Safe transaction if the caller is whitelisted for the given Safe account.
+     * @notice Sets the permitted destination for a specific API key account.
+     * @param safe Safe account
+     * @param apiKeyAccount The API key account
+     * @param destination The address that the API key account is permitted to execute transactions to
+     */
+    function setPermittedDestination(address safe, address apiKeyAccount, address destination) external {
+        if (!(OwnerManager(safe).isOwner(msg.sender))) {
+            revert CallerIsNotOwner(safe, msg.sender);
+        }
+        permittedDestinations[safe][apiKeyAccount] = destination;
+        emit ApiKeyAccountAdded(safe, apiKeyAccount, destination);
+    }
+
+    /**
+     * @notice Removes the permitted destination for a specific API key account.
+     * @param safe Safe account
+     * @param apiKeyAccount The API key account
+     */
+    function removePermittedDestination(address safe, address apiKeyAccount) external {
+        if (!(OwnerManager(safe).isOwner(msg.sender))) {
+            revert CallerIsNotOwner(safe, msg.sender);
+        }
+        delete permittedDestinations[safe][apiKeyAccount];
+        emit ApiKeyAccountRemoved(safe, apiKeyAccount);
+    }
+
+    /**
+     * @notice Executes a Safe transaction if the API key account is permitted for the destination.
      * @param manager Address of the Safe{Core} Protocol Manager.
      * @param safe Safe account
      * @param safetx SafeTransaction to be executed
@@ -48,8 +74,17 @@ contract WhitelistPlugin is BasePluginWithEventMetadata {
         ISafe safe,
         SafeTransaction calldata safetx
     ) external returns (bytes[] memory data) {
-        emit TuVieja(msg.sender);
-        // Test: Any tx that updates whitelist of this contract should be blocked
+        address safeAddress = address(safe);
+        SafeProtocolAction[] memory actions = safetx.actions;
+        uint256 length = actions.length;
+
+        for (uint256 i = 0; i < length; i++) {
+            address destination = permittedDestinations[safeAddress][msg.sender];
+            if (destination == address(0) || actions[i].to != destination) {
+                revert UnauthorizedApiKeyAccount(msg.sender, actions[i].to);
+            }
+        }
+
         (data) = manager.executeTransaction(safe, safetx);
     }
 }
