@@ -8,6 +8,8 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployer } = await getNamedAccounts();
     const { deploy } = deployments;
 
+    console.log("*AC deployer: ", deployer);
+
     // execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)
     // https://www.4byte.directory/signatures/?bytes4_signature=0x6a761202
     const relayMethod = "0x6a761202"
