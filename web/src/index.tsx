@@ -5,8 +5,6 @@ import Home from "./routes/home/Home";
 import reportWebVitals from "./reportWebVitals";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import PluginList from "./routes/plugins/PluginList";
-import { RelayPlugin } from "./routes/samples/relay/RelayPlugin";
-import { TuViPlugin } from "./routes/samples/relay/TuViPlugin";
 import { WhitelistPlugin } from "./routes/samples/relay/WhitelistPlugin";
 
 const router = createHashRouter([

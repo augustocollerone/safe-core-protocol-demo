@@ -1,10 +1,8 @@
-import { ethers, getAddress, toBigInt, parseEther, keccak256, toUtf8Bytes, ZeroHash, AddressLike } from "ethers"
+import { ethers, getAddress, toBigInt, toUtf8Bytes, AddressLike } from "ethers"
 import { getProvider } from "./web3";
 import { submitTxs } from "./safeapp";
 import { getManager } from "./protocol";
-import { CAPTURE_THE_FLAG_ABI, CAPTURE_THE_FLAG_ADDRESS } from "./sample";
-import { buildExecuteTx } from "./safe";
-import { SafeMultisigConfirmation, SafeMultisigTransaction } from "./services";
+import CAPTURE_THE_FLAG from "../abi/CaptureTheFlag.json";
 import { fetchTransactionLogs } from "./fetchTxLogs";
 import { loadPluginDetails } from "./plugins";
 
@@ -16,6 +14,8 @@ const SAMPLE_PLUGIN_ABI = [
     "function executeFromPlugin(address manager, address safe, bytes calldata data) external",
     "function whitelistedAddresses(address, address) view returns (bool)"
 ]
+
+const CAPTURE_THE_FLAG_ADDRESS = getAddress("0x0ccabdf5C726235a74484ec018cFc90a70886f22")
 
 export const isKnownSamplePlugin = (chainId: number, address: string): boolean => 
     ethers.toBigInt(chainId) == ethers.toBigInt(SAMPLE_PLUGIN_CHAIN_ID) &&
@@ -92,7 +92,7 @@ export const whitelistTx = async(safeAddress: string) => {
 
         const wallet = new ethers.Wallet(privateKey, provider);
         const plugin = new ethers.Contract(TOKET_PLUGIN_ADDRESS, SAMPLE_PLUGIN_ABI, wallet);
-        const captureTheFlag = new ethers.Contract(CAPTURE_THE_FLAG_ADDRESS, CAPTURE_THE_FLAG_ABI, wallet);
+        const captureTheFlag = new ethers.Contract(CAPTURE_THE_FLAG_ADDRESS, CAPTURE_THE_FLAG.abi, wallet);
 
         const manager = await getManager();
         const managerAddress = await manager.getAddress();
