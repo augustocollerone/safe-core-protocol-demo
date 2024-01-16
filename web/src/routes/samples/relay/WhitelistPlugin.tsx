@@ -46,23 +46,6 @@ export const WhitelistPlugin: FunctionComponent<{}> = () => {
     fetchData();
   }, [pluginAddress]);
 
-  // MARK: Fetch current whitelist
-  useEffect(() => {
-    if (safeInfo === undefined) return;
-    const fetchData = async () => {
-      try {
-        const whitelistedAddress = await checkWhitelist(
-          safeInfo.safeAddress,
-          ""
-        );
-        console.log("*AC WHITELISTED", whitelistedAddress);
-      } catch (e) {
-        console.error("*AC WHITELISTED", e);
-      }
-    };
-    fetchData();
-  }, [safeInfo, pluginAddress]);
-
   const handleCheckWhitelist = useCallback(
     async (account: string) => {
       setCheckStatus(undefined);

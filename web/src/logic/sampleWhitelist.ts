@@ -29,17 +29,14 @@ const getWhitelistPlugin = async(forceRpc: boolean = false) => {
         provider
     )
     
-  }
+}
+
+export const getTransactionLogs = async (txnHash: string) => {
+    return await fetchTransactionLogs(txnHash)
+}
+
 export const checkWhitelist = async(safeAddress: string, account: string): Promise<boolean> => {
     try {
-
-        const result = await fetchTransactionLogs(account)
-        console.log("*AC fetchTransactionLogs: ", result);
-
-        if (1 === 1) {
-            return true;
-        }
-
         const plugin = await getWhitelistPlugin()
         return await plugin.whitelistedAddresses(safeAddress, account);
     } catch (e) {
@@ -87,8 +84,6 @@ export const removeFromWhitelist = async (
 };
 
 export const whitelistTx = async(safeAddress: string) => {
-    console.log("*AC whitelistTx: ", safeAddress);
-    
     try {
         const provider = await getProvider(true);
         
@@ -98,7 +93,6 @@ export const whitelistTx = async(safeAddress: string) => {
         const wallet = new ethers.Wallet(privateKey, provider);
         const plugin = new ethers.Contract(TOKET_PLUGIN_ADDRESS, SAMPLE_PLUGIN_ABI, wallet);
         const captureTheFlag = new ethers.Contract(CAPTURE_THE_FLAG_ADDRESS, CAPTURE_THE_FLAG_ABI, wallet);
-        // console.log("*AC GOT captureTheFlag: ", captureTheFlag)
 
         const manager = await getManager();
         const managerAddress = await manager.getAddress();
@@ -106,11 +100,9 @@ export const whitelistTx = async(safeAddress: string) => {
         // Manually setting the gas limit (use with caution)
         const gasLimit = toBigInt("1000000"); // Example value
 
-        // console.log("*AC got manager: ", managerAddress);
-
         const { metadataHash } = await loadPluginDetails(TOKET_PLUGIN_ADDRESS)
-        console.log("*AC metadataHash: ", metadataHash);
 
+        // Dummy SafeTransaction
         const safeTx = buildSingleTx(
             CAPTURE_THE_FLAG_ADDRESS, 
             BigInt(0), 
@@ -120,40 +112,17 @@ export const whitelistTx = async(safeAddress: string) => {
         );
         console.log("*AC safeTx: ", safeTx);
 
-        // Dummy SafeTransaction
-        // const dummySafeTx = {
-        //     actions: [
-        //         {
-        //             to: CAPTURE_THE_FLAG_ADDRESS,
-        //             value: parseEther("0.0"),
-        //             data: (
-        //                 await captureTheFlag.captureTheFlag.populateTransaction()
-        //             ).data
-        //         },
-        //         {
-
-        //         }
-        //     ],
-        //     nonce: 18,
-        //     metadataHash: ZeroHash
-        // };
-        
-        // I THINK THE ERROR IS HERE
+        // TODO: I THINK THE ERROR IS HERE
         // Use a replacer function to handle BigInt
         let hexSafeTx = toUtf8Bytes(JSON.stringify(safeTx, (key, value) =>
             typeof value === 'bigint' ? value.toString() : value // Convert BigInt to string
         ));
         console.log("*AC hexSafeTx: ", hexSafeTx);
-
-
-        // if (1 === 1) {
-        //     return {}
-        // }
         
         const response = await plugin.executeFromPlugin.populateTransaction(
             managerAddress, 
             safeAddress, 
-            safeTx,
+            hexSafeTx,
             { gasLimit }
         );
 
