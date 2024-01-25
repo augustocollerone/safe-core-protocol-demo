@@ -18,7 +18,6 @@ import {
 import { getSafeInfo, isConnectedToSafe } from "../../../logic/safeapp";
 import { SafeInfo } from "@safe-global/safe-apps-sdk";
 import { SafeMultisigTransaction } from "../../../logic/services";
-import { NextTxsList } from "./NextTxs";
 import { buildExecuteTx } from "../../../logic/safe";
 import { PluginDetails, loadPluginDetails } from "../../../logic/plugins";
 
@@ -223,10 +222,6 @@ export const WhitelistPlugin: FunctionComponent<{}> = () => {
           </>
         )}
       </Card>
-
-      {safeInfo && (
-        <NextTxsList safeInfo={safeInfo} handleRelay={handleRelay} />
-      )}
     </div>
   );
 };
